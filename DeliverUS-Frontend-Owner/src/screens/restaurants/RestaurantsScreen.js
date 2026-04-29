@@ -52,7 +52,41 @@ export default function RestaurantsScreen({ navigation, route }) {
           </TextSemiBold>
         </TextSemiBold>
         <View style={styles.actionButtonsContainer}>
-          {/* Include pressable elements for edit and remove this line including brackets */}
+          <Pressable
+          onPress={() => console.log(`Edit pressed for restaurantId = ${item.id}`)}
+  style={({ pressed }) => [
+    {
+      backgroundColor: pressed
+        ? GlobalStyles.brandBlueTap
+        : GlobalStyles.brandBlue
+    },
+    styles.actionButton
+  ]}>
+  <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center' }]}>
+    <MaterialCommunityIcons name='pencil' color={'white'} size={20}/>
+    <TextRegular textStyle={styles.text}>
+      Edit
+    </TextRegular>
+  </View>
+</Pressable>
+
+<Pressable
+  onPress={() => console.log(`Delete pressed for restaurantId = ${item.id}`)}
+  style={({ pressed }) => [
+    {
+      backgroundColor: pressed
+        ? GlobalStyles.brandPrimaryTap
+        : GlobalStyles.brandPrimary
+    },
+    styles.actionButton
+  ]}>
+  <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center' }]}>
+    <MaterialCommunityIcons name='delete' color={'white'} size={20}/>
+    <TextRegular textStyle={styles.text}>
+      Delete
+    </TextRegular>
+  </View>
+</Pressable>
         </View>
       </ImageCard>
     )
