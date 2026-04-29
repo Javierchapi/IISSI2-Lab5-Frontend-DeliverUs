@@ -10,17 +10,19 @@ import {
 import { showMessage } from 'react-native-flash-message'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { getDetail } from '../../api/RestaurantEndpoints'
-
+import { remove } from '../../api/ProductEndpoints'
 import ImageCard from '../../components/ImageCard'
 import TextRegular from '../../components/TextRegular'
 import TextSemiBold from '../../components/TextSemiBold'
 import * as GlobalStyles from '../../styles/GlobalStyles'
+import DeleteModal from '../../components/DeleteModal'
 
 import defaultProductImage from '../../../assets/product.jpeg'
 import { API_BASE_URL } from '@env'
 
 export default function RestaurantDetailScreen({ navigation, route }) {
   const [restaurant, setRestaurant] = useState({})
+  const [productToBeDeleted, setProductToBeDeleted] = useState(null)
 
   useEffect(() => {
     fetchRestaurantDetail()
@@ -33,9 +35,9 @@ export default function RestaurantDetailScreen({ navigation, route }) {
           source={
             restaurant?.heroImage
               ? {
-                uri: API_BASE_URL + '/' + restaurant.heroImage,
-                cache: 'force-cache'
-              }
+                  uri: API_BASE_URL + '/' + restaurant.heroImage,
+                  cache: 'force-cache'
+                }
               : undefined
           }
           style={styles.imageBackground}
@@ -49,9 +51,9 @@ export default function RestaurantDetailScreen({ navigation, route }) {
               source={
                 restaurant.logo
                   ? {
-                    uri: API_BASE_URL + '/' + restaurant.logo,
-                    cache: 'force-cache'
-                  }
+                      uri: API_BASE_URL + '/' + restaurant.logo,
+                      cache: 'force-cache'
+                    }
                   : undefined
               }
             />
@@ -115,6 +117,53 @@ export default function RestaurantDetailScreen({ navigation, route }) {
             Not available
           </TextRegular>
         )}
+        <View style={styles.actionButtonsContainer}>
+          <Pressable
+            onPress={() =>
+              navigation.navigate('EditProductScreen', { id: item.id })
+            }
+            style={({ pressed }) => [
+              {
+                backgroundColor: pressed
+                  ? GlobalStyles.brandBlueTap
+                  : GlobalStyles.brandBlue
+              },
+              styles.actionButton
+            ]}
+          >
+            <View
+              style={[
+                { flex: 1, flexDirection: 'row', justifyContent: 'center' }
+              ]}
+            >
+              <MaterialCommunityIcons name="pencil" color={'white'} size={20} />
+              <TextRegular textStyle={styles.text}>Edit</TextRegular>
+            </View>
+          </Pressable>
+
+          <Pressable
+            onPress={() => {
+              setProductToBeDeleted(item)
+            }}
+            style={({ pressed }) => [
+              {
+                backgroundColor: pressed
+                  ? GlobalStyles.brandPrimaryTap
+                  : GlobalStyles.brandPrimary
+              },
+              styles.actionButton
+            ]}
+          >
+            <View
+              style={[
+                { flex: 1, flexDirection: 'row', justifyContent: 'center' }
+              ]}
+            >
+              <MaterialCommunityIcons name="delete" color={'white'} size={20} />
+              <TextRegular textStyle={styles.text}>Delete</TextRegular>
+            </View>
+          </Pressable>
+        </View>
       </ImageCard>
     )
   }
@@ -140,9 +189,42 @@ export default function RestaurantDetailScreen({ navigation, route }) {
       })
     }
   }
+  const removeProduct = async product => {
+    try {
+      await remove(product.id)
+      await fetchRestaurantDetail()
+      setProductToBeDeleted(null)
+      showMessage({
+        message: `Product ${product.name} successfully removed`,
+        type: 'success',
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+    } catch (error) {
+      console.log(error)
+      setProductToBeDeleted(null)
+      showMessage({
+        message: `Product ${product.name} could not be removed.`,
+        type: 'error',
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+    }
+  }
 
   return (
     <View style={styles.container}>
+      <DeleteModal
+        isVisible={productToBeDeleted !== null}
+        onCancel={() => setProductToBeDeleted(null)}
+        onConfirm={() => removeProduct(productToBeDeleted)}
+      >
+        <TextRegular> Product {productToBeDeleted?.name}</TextRegular>
+        <TextRegular>The product will be deleted</TextRegular>
+        <TextRegular>
+          If the product belongs to an order, it cannot be deleted.
+        </TextRegular>
+      </DeleteModal>
       <FlatList
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmptyProductsList}

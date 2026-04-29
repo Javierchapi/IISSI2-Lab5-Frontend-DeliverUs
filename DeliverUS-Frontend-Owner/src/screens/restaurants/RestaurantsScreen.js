@@ -16,6 +16,7 @@ import { API_BASE_URL } from '@env'
 export default function RestaurantsScreen({ navigation, route }) {
   const [restaurants, setRestaurants] = useState([])
   const { loggedInUser } = useContext(AuthorizationContext)
+  const [restaurantToBeDeleted, setRestaurantToBeDeleted] = useState(null)
 
   useEffect(() => {
     if (loggedInUser) {
@@ -54,7 +55,7 @@ export default function RestaurantsScreen({ navigation, route }) {
         <View style={styles.actionButtonsContainer}>
           <Pressable
             onPress={() =>
-              console.log(`Edit pressed for restaurantId = ${item.id}`)
+              navigation.navigate('EditRestaurantScreen', { id: item.id })
             }
             style={({ pressed }) => [
               {
@@ -76,9 +77,9 @@ export default function RestaurantsScreen({ navigation, route }) {
           </Pressable>
 
           <Pressable
-            onPress={() =>
-              console.log(`Delete pressed for restaurantId = ${item.id}`)
-            }
+            onPress={() => {
+              setRestaurantToBeDeleted(item)
+            }}
             style={({ pressed }) => [
               {
                 backgroundColor: pressed
@@ -157,9 +158,44 @@ export default function RestaurantsScreen({ navigation, route }) {
       })
     }
   }
+  const removeRestaurant = async restaurant => {
+    try {
+      await remove(restaurant.id)
+      await fetchRestaurants()
+      setRestaurantToBeDeleted(null)
+      showMessage({
+        message: `Restaurant ${restaurant.name} successfully removed`,
+        type: 'success',
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+    } catch (error) {
+      console.log(error)
+      setRestaurantToBeDeleted(null)
+      showMessage({
+        message: `Restaurant ${restaurant.name} could not be removed.`,
+        type: 'error',
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+    }
+  }
 
   return (
     <>
+      <DeleteModal
+        isVisible={restaurantToBeDeleted !== null}
+        onCancel={() => setRestaurantToBeDeleted(null)}
+        onConfirm={() => removeRestaurant(restaurantToBeDeleted)}
+      >
+        <TextRegular> Restaurant {restaurantToBeDeleted?.name}</TextRegular>
+        <TextRegular>
+          The products of this restaurant will be deleted as well
+        </TextRegular>
+        <TextRegular>
+          If the restaurant has orders, it cannot be deleted.
+        </TextRegular>
+      </DeleteModal>
       <FlatList
         style={styles.container}
         data={restaurants}

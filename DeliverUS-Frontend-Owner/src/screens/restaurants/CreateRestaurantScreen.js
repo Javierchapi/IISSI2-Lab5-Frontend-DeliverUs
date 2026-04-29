@@ -13,12 +13,12 @@ import { showMessage } from 'react-native-flash-message'
 import { ErrorMessage, Formik } from 'formik'
 import TextError from '../../components/TextError'
 import ImagePicker from '../../components/ImagePicker'
- 
+
 export default function CreateRestaurantScreen({ navigation }) {
   const [open, setOpen] = useState(false)
   const [restaurantCategories, setRestaurantCategories] = useState([])
   const [backendErrors, setBackendErrors] = useState()
- 
+
   const initialRestaurantValues = {
     name: null,
     description: null,
@@ -53,7 +53,7 @@ export default function CreateRestaurantScreen({ navigation }) {
       .integer()
       .required('Restaurant category is required')
   })
- 
+
   useEffect(() => {
     async function fetchRestaurantCategories() {
       try {
@@ -77,7 +77,7 @@ export default function CreateRestaurantScreen({ navigation }) {
     }
     fetchRestaurantCategories()
   }, [])
- 
+
   const createRestaurant = async values => {
     setBackendErrors([])
     try {
@@ -112,7 +112,7 @@ export default function CreateRestaurantScreen({ navigation }) {
               <InputItem name="shippingCosts" label="Shipping costs:" />
               <InputItem name="email" label="Email:" />
               <InputItem name="phone" label="Phone:" />
- 
+
               <DropDownPicker
                 open={open}
                 value={values.restaurantCategoryId}
@@ -131,28 +131,28 @@ export default function CreateRestaurantScreen({ navigation }) {
                 name={'restaurantCategoryId'}
                 render={msg => <TextError>{msg}</TextError>}
               />
- 
+
               <ImagePicker
                 label="Logo:"
                 image={values.logo}
                 defaultImage={restaurantLogo}
                 onImagePicked={result => setFieldValue('logo', result)}
               />
- 
+
               <ImagePicker
                 label="Hero Image:"
                 image={values.heroImage}
                 defaultImage={restaurantBackground}
                 onImagePicked={result => setFieldValue('heroImage', result)}
               />
- 
+
               {backendErrors &&
                 backendErrors.map((error, index) => (
                   <TextError key={index}>
                     {error.param}-{error.msg}
                   </TextError>
                 ))}
- 
+
               <Pressable
                 onPress={handleSubmit}
                 style={({ pressed }) => [
@@ -184,7 +184,7 @@ export default function CreateRestaurantScreen({ navigation }) {
     </Formik>
   )
 }
- 
+
 const styles = StyleSheet.create({
   button: {
     borderRadius: 8,
